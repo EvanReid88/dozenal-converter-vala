@@ -1,9 +1,14 @@
-public class MyApp : Gtk.Application {
+public class DuodecimalConvert : Gtk.Application {
 
-  int textfield_events = 4195088;
-  string tempstr = "";
+  string chars = "0123456789XE"; // TODO rename
+  private Gtk.ApplicationWindow main_window;
+  private Gtk.Label decimal_label;
+  private Gtk.Label duodecimal_label;
+  private Gtk.Entry decimal_text_field;
+  private Gtk.Entry duodecimal_text_field;
 
-  public MyApp () {
+
+  public DuodecimalConvert () {
     Object (
       application_id: "com.github.evanreid88.elementary-test-evanr",
       flags: ApplicationFlags.FLAGS_NONE
@@ -11,161 +16,189 @@ public class MyApp : Gtk.Application {
   }
 
   protected override void activate () {
-    var main_window = new Gtk.ApplicationWindow (this);
+    main_window = new Gtk.ApplicationWindow (this);
     main_window.set_resizable(false);
-    //main_window.default_height = 300;
-    //main_window.default_width = 500;
-    main_window.title = "Dozenal Converter";
+    main_window.get_style_context().add_class("window");
+    main_window.title = "Dozenal / Decimal Converter";
 
-    var decimal_labal = new Gtk.Label("Decimal: ");
-    decimal_labal.margin = 8;
+    connectWidgets();
+    connectStyles();
+    connectListeners();
+    main_window.show_all ();
+  }
 
-    var text_field = new Gtk.Entry();
-    text_field.margin = 8;
-    text_field.set_width_chars(30);
+  private void connectWidgets() {
 
-    //  var button_hello = new Gtk.Button.with_label("Convert");
-    //  button_hello.margin = 12;
-    //  button_hello.clicked.connect(() => {
-    //    button_hello.label = "Hello World!";
-    //    button_hello.sensitive = false;
-    //  });	
+    // labels and entry fields
+    decimal_label = new Gtk.Label("Decimal: ");
+    decimal_label.get_style_context().add_class("label");
+    decimal_label.margin = 10;
+    decimal_label.margin_top = 14;
 
-    var dozenal_label = new Gtk.Label("Dozenal: ");
-    dozenal_label.margin = 8;
+    decimal_text_field = new Gtk.Entry();
+    decimal_text_field.margin = 10;
+    decimal_text_field.margin_top = 14;
+    decimal_text_field.set_width_chars(30);
 
-    var dozenal_text_field = new Gtk.Entry();
-    dozenal_text_field.margin = 8;
-    dozenal_text_field.set_width_chars(30);
+    duodecimal_label = new Gtk.Label("Dozenal: ");
+    duodecimal_label.get_style_context().add_class("label");
+    duodecimal_label.margin = 10;
 
+    duodecimal_text_field = new Gtk.Entry();
+    duodecimal_text_field.margin = 10;
+    duodecimal_text_field.set_width_chars(30);
+
+    // TODO add toggle information button, add styles
+    var info_label = new Gtk.Label("Precision truncated to the input precision.");
+    info_label.margin_bottom = 10;
+
+    // orientation
     var hlist = new Gtk.Grid();
     var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
     var dozenal_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
 
-    text_field.changed.connect(() => {
-      // TODO check for non numerical values
-      // TODO convert dozenal to decimal  
-      if (text_field.editable) {
-        dozenal_text_field.editable = false;
+    hbox.pack_start(decimal_label, true, true, 0);
+    hbox.pack_start(decimal_text_field, true, true, 0);
 
-      string entry = text_field.text;
-      string dozenal = ConvertToDuodecimal(entry);
-      dozenal_text_field.set_text(dozenal);
-
-      dozenal_text_field.editable = true;
-      }
-    });
-
-    dozenal_text_field.changed.connect(() => {
-      if (dozenal_text_field.editable) {
-        text_field.editable = false;
-        string entry = dozenal_text_field.text;
-        string duodecimal = DuodecimalToDecimal(entry);
-        text_field.set_text(duodecimal);
-        text_field.editable = true;
-      }
-    });
-
-
-    hbox.pack_start(decimal_labal, true, true, 0);
-    hbox.pack_start(text_field, true, true, 0);
-
-    dozenal_box.pack_start(dozenal_label, true, true, 0);
-    dozenal_box.pack_start(dozenal_text_field, true, true, 0);
+    dozenal_box.pack_start(duodecimal_label, true, true, 0);
+    dozenal_box.pack_start(duodecimal_text_field, true, true, 0);
 
     hlist.attach(hbox, 1, 1, 1, 1);
     hlist.attach(dozenal_box, 1, 2, 1, 1);
+    hlist.attach(info_label, 1, 3, 1,1);
     main_window.add(hlist);
-
-    main_window.show_all ();
   }
 
-  public string ConvertToDuodecimal(string nstring) {
+  private void connectStyles() {
+    Gtk.CssProvider css_provider = new Gtk.CssProvider();
+    string path = "styles.css";
+    // test if the css file exist
+    if (FileUtils.test (path, FileTest.EXISTS))
+    {
+      try {
+        css_provider.load_from_path(path);
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), 
+                                           css_provider, 
+                                           Gtk.STYLE_PROVIDER_PRIORITY_USER);
+      } catch (Error e) {
+        error ("Cannot load CSS stylesheet: %s", e.message);
+      }
+    }
+  }
 
-    string chars = "0123456789XE";
-    string sign = " ";
-    double n = double.parse(nstring);
+  private void connectListeners() {
+    decimal_text_field.changed.connect(() => {
+      if (decimal_text_field.editable) {
+        duodecimal_text_field.editable = false;
 
-    if (n < 0) {
-      n = n.abs();
-      sign = "-";
+        string entry = decimal_text_field.text;
+        string dozenal = decimalToDuodecimal(entry);
+        duodecimal_text_field.set_text(dozenal);
+
+        duodecimal_text_field.editable = true;
+      }
+    });
+
+    duodecimal_text_field.changed.connect(() => {
+      if (duodecimal_text_field.editable) {
+        decimal_text_field.editable = false;
+        string entry = duodecimal_text_field.text;
+        string duodecimal = duodecimalToDecimal(entry);
+        decimal_text_field.set_text(duodecimal);
+        decimal_text_field.editable = true;
+      }
+    });
+  }
+
+  private string intDecimalToDuodecimal(double intval) {
+    string res = "";
+    long R;
+    double Q = Math.floor(intval.abs());
+    while (true) {
+      R = (long)(Q % 12);
+      res = chars[R:R+1] + res;
+      Q = (Q - R) / 12;
+      if (Q == 0) break;
     }
 
-    double quotient = Math.floor(n);
-    double fractional = n - quotient;
-    double remainder;
+    if (intval < 0) {
+      res = "-" + res;
+    }
+
+    return res;
+  }
+
+  private string intFractionToDuodecimal(string frac) {
+    int len = frac.length;
+    double fracnum = double.parse("0." + frac);
+    string res = "";
+
+    while (len > 0) {
+      double v = 0;
+      double n = fracnum * 12;
+      if (len > 1) {
+        v = Math.floor(n);
+      } else {
+        v = Math.round(n);
+      }
+      fracnum = n - v;
+      res += intDecimalToDuodecimal(v);
+      len--;
+    }
+    return res;
+  }
+
+  private string decimalToDuodecimal(string dec) {
+    if (dec == "" || dec == "-") return dec;
     
-    var integer = "";
-    while (quotient != 0) {
-      remainder = quotient % 12.00;
-      quotient = Math.floor(quotient / 12.00);
-      integer = chars[(int)remainder : (int)remainder + 1] + integer;
+    string[] parts = dec.split(".", 2);
+    string intpart = parts[0];
+    string fracpart = parts[1];
+
+    string res = intDecimalToDuodecimal(double.parse(intpart));
+
+    if (parts.length > 1 && fracpart.length > 0) {
+      res += "." + intFractionToDuodecimal(fracpart);
     }
 
-    var decimal = ".";
-
-    if (fractional > 0.0) {
-      remainder = fractional;
-
-      int range = nstring.split(".")[1].char_count() + 1;
-
-      for (int i = 0; i < range; i++) {
-        
-        quotient = Math.floor(remainder * 12.00);
-        remainder = (remainder * 12.00) - quotient;
-
-        decimal += chars[(int)quotient : (int)quotient + 1];
-      }
-
-      if (remainder > 0.5) {
-        decimal += "1";
-      }
-    }
-
-    return sign + integer + decimal;
+    return res;
   }
 
-  public double IntDuodecimalToDecimal(string intpart) {
+  private double intDuodecimalToDecimal(string intpart) {
     bool neg = false;
+    string returnint = intpart;
     if (intpart.get_char(0) == '-') {
       string dstring = intpart.substring(1, intpart.char_count() - 1);
-      intpart = dstring;
-      print(intpart);
+      returnint = dstring;
       neg = true;
     }
 
     double res = 0;
     int n = 0;
-    for (int i = 0; i < intpart.char_count(); i++) {
-      unichar d = intpart.get_char(i);
+    for (int i = 0; i < returnint.char_count(); i++) {
+      unichar d = returnint.get_char(i);
       if (d == 'E') {
         n = 11;
       } else if (d == 'X') {
         n = 10;
       } else {
-        n = int.parse(intpart[i:i+1]);
+        n = int.parse(returnint[i:i+1]);
       }
-      res += n*Math.pow(12.00, (intpart.length - i - 1));
+      res += n*Math.pow(12.00, (returnint.length - i - 1));
     }
 
-    //  if (neg) {
-    //    res = -res;
-    //  }
-
-    //  char[] buf = new char[double.DTOSTR_BUF_SIZE];
-    //  unowned string str = res.to_str(buf);
-    //  string resstr = str;
-
-    //  if (neg) {
-    //    resstr = string.join("-", str);
-    //  }
+    if (neg) {
+      res = res * -1;
+    }
 
     return res;
   }
-
-  public string DuodecimalToDecimal(string doz) {
+  
+  // convert duodecimal to decimal
+  private string duodecimalToDecimal(string doz) {
     if (doz == "" || doz == "-") { return doz; }
-    string[] parts = doz.split(".");
+
+    string[] parts = doz.split(".", 2);
     string integer = parts[0];
     string fraction = parts[1];
 
@@ -176,7 +209,7 @@ public class MyApp : Gtk.Application {
       integer = integer + fraction;
     }
 
-    double result = IntDuodecimalToDecimal(integer);
+    double result = intDuodecimalToDecimal(integer);
 
     while (div_times > 0) {
       result = result / 12;
@@ -188,11 +221,14 @@ public class MyApp : Gtk.Application {
 
     char[] buf = new char[double.DTOSTR_BUF_SIZE];
     unowned string str = result.to_str(buf);
-    return str;
+    string resstr = str;
+
+    return resstr;
   }
 
   public static int main (string[] args) {
-    var app = new MyApp ();
+    Gtk.init(ref args);
+    var app = new DuodecimalConvert ();
     return app.run (args);
   }
 }

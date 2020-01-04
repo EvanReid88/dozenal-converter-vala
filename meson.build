@@ -6,9 +6,11 @@ executable(
     meson.project_name(),
     'src/Application.vala',
     dependencies: [
-        dependency('gtk+-3.0')
+        dependency('gtk+-3.0'),
     ],
-    install: true
+    install: true,
+    link_args : ['-lm', '-X']
+
 )
 
 #Install our .desktop file so the Applications Menu will see it

@@ -35,27 +35,27 @@ public class DuodecimalConvert : Gtk.Application {
     // labels and entry fields
     decimal_label = new Gtk.Label("Decimal: ");
     decimal_label.get_style_context().add_class("label");
-    decimal_label.margin = 6;
+    decimal_label.margin = 5;
     decimal_label.margin_top = 10;
 
     decimal_text_field = new Gtk.Entry();
     decimal_text_field.get_style_context().add_class("entry");
-    decimal_text_field.margin = 6;
+    decimal_text_field.margin = 5;
     decimal_text_field.margin_top = 10;
     decimal_text_field.set_width_chars(30);
 
     duodecimal_label = new Gtk.Label("Dozenal: ");
     duodecimal_label.get_style_context().add_class("label");
-    duodecimal_label.margin = 6;
+    duodecimal_label.margin = 5;
 
     duodecimal_text_field = new Gtk.Entry();
     duodecimal_text_field.get_style_context().add_class("entry");
-    duodecimal_text_field.margin = 6;
+    duodecimal_text_field.margin = 5;
     duodecimal_text_field.set_width_chars(30);
 
     // TODO add toggle information button, add styles
     var info_label = new Gtk.Label("Precision is truncated to the input precision.");
-    info_label.margin_bottom = 6;
+    info_label.margin_bottom = 5;
 
     // orientation
     var hlist = new Gtk.Grid();
@@ -76,18 +76,27 @@ public class DuodecimalConvert : Gtk.Application {
 
   private void connectStyles() {
     Gtk.CssProvider css_provider = new Gtk.CssProvider();
-    string path = "styles.css";
-    // test if the css file exist
-    if (FileUtils.test (path, FileTest.EXISTS))
-    {
-      try {
-        css_provider.load_from_path(path);
-        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), 
-                                           css_provider, 
-                                           Gtk.STYLE_PROVIDER_PRIORITY_USER);
-      } catch (Error e) {
-        error ("Cannot load CSS stylesheet: %s", e.message);
-      }
+  
+    try {
+      css_provider.load_from_data("
+          .window {
+            color: #d2d5d9;
+            background-color:#657285;
+          }
+      
+          .label {
+            font-size: 18px;
+          }
+      
+          .entry {
+            font-size: 14px;
+          }
+      ");
+      Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), 
+                                        css_provider, 
+                                        Gtk.STYLE_PROVIDER_PRIORITY_USER);
+    } catch (Error e) {
+      error ("Cannot load CSS stylesheet: %s", e.message);
     }
   }
 

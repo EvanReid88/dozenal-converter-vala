@@ -2,7 +2,7 @@
 Name=Dozenal / Decimal Converter
 GenericName=Dozenal Converter
 Comment=Provides conversion between dozenal and decimal using Vala and Gtk
-Categories=Utility;Education;Math;Accessories;
+Categories=Utility;Education;Accessories;
 Exec=com.github.evanreid88.dozenal-converter-vala
 Icon=application-default-icon
 Terminal=false

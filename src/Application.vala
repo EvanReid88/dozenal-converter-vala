@@ -1,6 +1,9 @@
 public class DuodecimalConvert : Gtk.Application {
 
-  string chars = "0123456789XE"; // TODO rename
+  private static string duodecimal_digits = "0123456789XE";
+  
+  Regex decimal_regex;
+  Regex duodecimal_regex;
   private Gtk.ApplicationWindow main_window;
   private Gtk.Label decimal_label;
   private Gtk.Label duodecimal_label;
@@ -32,25 +35,27 @@ public class DuodecimalConvert : Gtk.Application {
     // labels and entry fields
     decimal_label = new Gtk.Label("Decimal: ");
     decimal_label.get_style_context().add_class("label");
-    decimal_label.margin = 10;
-    decimal_label.margin_top = 14;
+    decimal_label.margin = 6;
+    decimal_label.margin_top = 10;
 
     decimal_text_field = new Gtk.Entry();
-    decimal_text_field.margin = 10;
-    decimal_text_field.margin_top = 14;
+    decimal_text_field.get_style_context().add_class("entry");
+    decimal_text_field.margin = 6;
+    decimal_text_field.margin_top = 10;
     decimal_text_field.set_width_chars(30);
 
     duodecimal_label = new Gtk.Label("Dozenal: ");
     duodecimal_label.get_style_context().add_class("label");
-    duodecimal_label.margin = 10;
+    duodecimal_label.margin = 6;
 
     duodecimal_text_field = new Gtk.Entry();
-    duodecimal_text_field.margin = 10;
+    duodecimal_text_field.get_style_context().add_class("entry");
+    duodecimal_text_field.margin = 6;
     duodecimal_text_field.set_width_chars(30);
 
     // TODO add toggle information button, add styles
-    var info_label = new Gtk.Label("Precision truncated to the input precision.");
-    info_label.margin_bottom = 10;
+    var info_label = new Gtk.Label("Precision is truncated to the input precision.");
+    info_label.margin_bottom = 6;
 
     // orientation
     var hlist = new Gtk.Grid();
@@ -87,36 +92,56 @@ public class DuodecimalConvert : Gtk.Application {
   }
 
   private void connectListeners() {
+
+    try {
+      decimal_regex = new GLib.Regex("^-?[1-9]*[0-9]*(\\.)?[0-9]*$");
+    } catch (Error e) {
+      error ("Cannot load regex: %s", e.message);
+    }
+
+    try {
+      duodecimal_regex = new Regex("^-?[0-9XE]*(\\.)?[0-9XE]*$");
+    } catch (Error e) {
+      error ("Cannot load regex: %s", e.message);
+    }
+
     decimal_text_field.changed.connect(() => {
       if (decimal_text_field.editable) {
-        duodecimal_text_field.editable = false;
-
         string entry = decimal_text_field.text;
-        string dozenal = decimalToDuodecimal(entry);
-        duodecimal_text_field.set_text(dozenal);
-
-        duodecimal_text_field.editable = true;
+        if (decimal_regex.match(entry)) {
+          duodecimal_text_field.editable = false;
+          string dozenal = decimalToDuodecimal(entry);
+          duodecimal_text_field.set_text(dozenal);
+          duodecimal_text_field.editable = true;
+        } else {
+          decimal_text_field.set_text(entry[0:entry.length - 1]);
+        }
       }
     });
 
     duodecimal_text_field.changed.connect(() => {
       if (duodecimal_text_field.editable) {
-        decimal_text_field.editable = false;
         string entry = duodecimal_text_field.text;
-        string duodecimal = duodecimalToDecimal(entry);
-        decimal_text_field.set_text(duodecimal);
-        decimal_text_field.editable = true;
+        if (duodecimal_regex.match(entry)) {
+          decimal_text_field.editable = false;
+          string duodecimal = duodecimalToDecimal(entry);
+          decimal_text_field.set_text(duodecimal);
+          decimal_text_field.editable = true;
+        } else {
+          duodecimal_text_field.set_text(entry[0:entry.length - 1]);
+        }
       }
     });
   }
 
+  // convert integer portion of decimal to duodecimal
   private string intDecimalToDuodecimal(double intval) {
     string res = "";
     long R;
     double Q = Math.floor(intval.abs());
     while (true) {
       R = (long)(Q % 12);
-      res = chars[R:R+1] + res;
+      res = duodecimal_digits[R:R+1] + res;
       Q = (Q - R) / 12;
       if (Q == 0) break;
     }
@@ -128,6 +153,7 @@ public class DuodecimalConvert : Gtk.Application {
     return res;
   }
 
+  // convert fraction portion of decimal to duodecimal
   private string intFractionToDuodecimal(string frac) {
     int len = frac.length;
     double fracnum = double.parse("0." + frac);
@@ -148,6 +174,7 @@ public class DuodecimalConvert : Gtk.Application {
     return res;
   }
 
+  // convert a decimal to duodecimal 
   private string decimalToDuodecimal(string dec) {
     if (dec == "" || dec == "-") return dec;
     
@@ -163,7 +190,8 @@ public class DuodecimalConvert : Gtk.Application {
 
     return res;
   }
-
+  
+  // convert integer portion of duodecimal string to decimal
   private double intDuodecimalToDecimal(string intpart) {
     bool neg = false;
     string returnint = intpart;

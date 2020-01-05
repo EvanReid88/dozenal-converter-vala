@@ -1,5 +1,8 @@
 public class DuodecimalConvert : Gtk.Application {
 
+  // TODO add travis ci integration
+  // TODO add dock icons
+
   private static string duodecimal_digits = "0123456789XE";
   
   Regex decimal_regex;
@@ -22,7 +25,7 @@ public class DuodecimalConvert : Gtk.Application {
     main_window = new Gtk.ApplicationWindow (this);
     main_window.set_resizable(false);
     main_window.get_style_context().add_class("window");
-    main_window.title = "Dozenal / Decimal Converter";
+    main_window.title = "Dozenal Converter";
 
     connectWidgets();
     connectStyles();
@@ -53,8 +56,7 @@ public class DuodecimalConvert : Gtk.Application {
     duodecimal_text_field.margin = 5;
     duodecimal_text_field.set_width_chars(30);
 
-    // TODO add toggle information button, add styles
-    var info_label = new Gtk.Label("Precision is truncated to the input precision.");
+    var info_label = new Gtk.Label("Result precision is truncated to the input precision.");
     info_label.margin_bottom = 5;
 
     // orientation
@@ -70,7 +72,7 @@ public class DuodecimalConvert : Gtk.Application {
 
     hlist.attach(hbox, 1, 1, 1, 1);
     hlist.attach(dozenal_box, 1, 2, 1, 1);
-    hlist.attach(info_label, 1, 3, 1,1);
+    hlist.attach(info_label, 1, 3, 2,1);
     main_window.add(hlist);
   }
 
@@ -257,7 +259,7 @@ public class DuodecimalConvert : Gtk.Application {
     result = result / Math.pow(10, prec);
 
     char[] buf = new char[double.DTOSTR_BUF_SIZE];
-    unowned string str = result.to_str(buf);
+    unowned string str = result.to_str(buf); // TODO see if unowned needed
     string resstr = str;
 
     return resstr;

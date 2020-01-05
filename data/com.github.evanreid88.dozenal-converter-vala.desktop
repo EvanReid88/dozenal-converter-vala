@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Dozenal / Decimal Converter
+Name=Dozenal Converter
 GenericName=Dozenal Converter
 Comment=Provides conversion between dozenal and decimal using Vala and Gtk
 Categories=Utility;Education;Accessories;

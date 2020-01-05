@@ -3,15 +3,10 @@
 <component type="desktop">
   <id>com.github.evanreid88.dozenal-converter-vala</id>
   <metadata_license>CC0</metadata_license>
-  <name>Dozenal / Decimal Converter</name>
+  <name>Dozenal Converter</name>
   <summary>Convert between dozenal and decimal</summary>
   <description>
     <p>A simple applet for converting between base decimal and dozenal representations of rational and irrational numbers.</p>
-    <p>Dozenal is represented as digets 0-9, X = 10 and E = 11. The decimal in a dozenal number represents the fractional ppoint.</p>
+    <p>Dozenal is represented as digets 0-9, X = 10 and E = 11. The decimal in a dozenal number represents the fractional point.</p>
   </description>
-  <custom>
-     <value key="x-appcenter-color-primary">#657285</value>
-     <value key="x-appcenter-color-primary-text">#d2d5d9</value>
-     <value key="x-appcenter-suggested-price">0</value>
-  </custom>
 </component>
